@@ -3,4 +3,23 @@
 {% block content %} 
 <h1>This is the homepage</h1>
 <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
+
+<div class="hero-section">
+  <p>
+      Grade Predictor App
+  </p>
+</div>
+
+<div>
+  <form id="prediction-form">
+      <input type="number" name="attendance" placeholder="Attendance">
+      <input type="number" name="financial_situation" placeholder="Financial Situation">
+      <input type="number" name="learning_environment" placeholder="Learning Environment">
+      <input type="number" name="previous_grades" placeholder="Previous Grades">
+      <button type="submit">Predict</button>
+  </form>
+</div>
+
+<div id="prediction-result"></div>
+
 {% endblock %}
