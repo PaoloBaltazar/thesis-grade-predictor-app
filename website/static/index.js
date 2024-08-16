@@ -23,3 +23,20 @@ document.getElementById('prediction-form').addEventListener('submit', function(e
   })
   .catch(error => console.error('Error:', error));
 });
+
+const toggleBtn = document.getElementById('toggle-btn');
+const toggleBtnCollapsed = document.getElementById('toggle-btn-collapsed');
+const sidebar = document.getElementById('sidebar');
+const mainContent = document.getElementById('main-content');
+
+toggleBtn.addEventListener('click', () => {
+sidebar.classList.add('collapsed');
+toggleBtn.style.display = 'none';
+toggleBtnCollapsed.style.display = 'block';
+});
+
+toggleBtnCollapsed.addEventListener('click', () => {
+sidebar.classList.remove('collapsed');
+toggleBtnCollapsed.style.display = 'none';
+toggleBtn.style.display = 'block';
+});
