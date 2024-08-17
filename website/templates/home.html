@@ -1,7 +1,128 @@
 {% extends "base.html" %} {% block title %}Home{% endblock %}
 
 {% block content %} 
-<h1>This is the homepage</h1>
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+  <div style="margin-top: 40px;">
+    <span class="toggle-btn collapse-btn" id="toggle-btn">&#60;</span>
+    <h5>File Upload</h5>
+  </div>
+  
+
+  
+  <div class="mb-3">
+    <label for="formFile" class="form-label">Upload csv file</label>
+    <input class="form-control" type="file" id="formFile">
+    <br>
+    <input class="btn btn-primary" type="submit" value="Submit">
+  </div>
+
+
+  <div style="margin-top: 50px;">
+    <h5>Manual Input</h5>
+  </div>
+
+  <!-- Attendance -->
+   <form id="prediction-form">
+    <div class="mb-4">
+      <label for="attendanceInput" class="form-label">Attendance</label>
+      <input type="number" name="attendance" aria-label="Attendance" class="form-control" placeholder="Enter Attendance" id="attendanceInput">   
+    </div>
+  
+    <!-- Previous Grade -->
+    <div class="mb-3">
+        <label for="PreviousGrade" class="form-label">Previous Grade</label>
+        <input type="number" name="previous_grades" aria-label="Last name" class="form-control" placeholder="Enter Previous Grade" id="PreviousGrade">
+    </div>
+  
+    <!-- Financial Situation Slider -->
+    <div class="mb-3">
+        <label for="financialSituation" class="form-label d-block">Financial Situation</label>
+        <input type="range" name="financial_situation" class="form-range" min="1" max="5" step="1" id="financialSituation" value="3">
+        <span class="d-block text-center text-muted" id="financialSituationValue">3</span>
+    </div>
+  
+    <!-- Learning Environment Slider -->
+    <div class="mb-3">
+        <label for="learningEnvironment" class="form-label d-block">Learning Environment</label>
+        <input type="range" name="learning_environment" class="form-range" min="1" max="5" step="1" id="learningEnvironment" value="3">
+        <span class="d-block text-center text-muted" id="learningEnvironmentValue">3</span>
+    </div>
+    <input class="btn btn-primary" type="submit" value="Submit">
+   </form>
+  
+</div>
+
+
+<!-- Main Content -->
+<div class="main-content fixed" id="main-content">
+  <span class="toggle-btn" id="toggle-btn-collapsed" style="display:none;">&gt;</span>
+  <nav class="mb-3">
+    <ul class="nav justify-content-end">
+      <li class="nav-item">
+        <a class="nav-link text-dark fw-medium" id="logout" href="/logout">Logout</a>
+      </li>
+    </ul>
+  </nav>
+  
+
+  <div class="container" style="padding: 50px;">
+    <h1 class="mb-5" align="center">Grade Predictor App</h1>
+
+    <div class="accordion accordion-flush mb-5" id="accordionFlushExample">
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+            Data
+          </button>
+        </h2>
+        <div id="flush-collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+          <table class="table">
+            <thead>
+                <tr>
+                    {% for header in csv_data[0] %}
+                        <th>{{ header }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in csv_data[1:] %}
+                    <tr>
+                        {% for cell in row %}
+                            <td>{{ cell }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
+            Grades
+          </button>
+        </h2>
+        <div id="flush-collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+          <div class="accordion-body">Placeholder content for this accordion, which is intended to demonstrate the <code>.accordion-flush</code> class. This is the second item's accordion body. Let's imagine this being filled with some actual content.</div>
+        </div>
+      </div>
+
+    </div>
+
+    
+
+    <div id="prediction-result" class="alert alert-primary" role="alert">
+      Predicted Grade: 
+    </div>
+  </div>
+  
+</div>
+
+
+{% endblock %}
+
+<!-- <h1>This is the homepage</h1>
 <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
 
 <div class="hero-section">
@@ -20,6 +141,4 @@
   </form>
 </div>
 
-<div id="prediction-result"></div>
-
-{% endblock %}
+<div id="prediction-result"></div> -->
