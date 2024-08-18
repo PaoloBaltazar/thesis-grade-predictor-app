@@ -10,12 +10,14 @@
   
 
   
-  <div class="mb-3">
-    <label for="formFile" class="form-label">Upload csv file</label>
-    <input class="form-control" type="file" id="formFile">
-    <br>
-    <input class="btn btn-primary" type="submit" value="Submit">
-  </div>
+  <form id="file-upload-form" action="{{ url_for('views.upload_file') }}" method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+      <label for="formFile" class="form-label">Upload CSV file</label>
+      <input class="form-control" type="file" name="file" id="formFile" accept=".csv" required>
+      <br>
+      <input class="btn btn-primary" type="submit" value="Submit">
+    </div>
+  </form>
 
 
   <div style="margin-top: 50px;">
@@ -80,13 +82,13 @@
           <table class="table">
             <thead>
                 <tr>
-                    {% for header in csv_data[0] %}
+                    {% for header in csv_prevdata[0] %}
                         <th>{{ header }}</th>
                     {% endfor %}
                 </tr>
             </thead>
             <tbody>
-                {% for row in csv_data[1:] %}
+                {% for row in csv_prevdata[1:] %}
                     <tr>
                         {% for cell in row %}
                             <td>{{ cell }}</td>
@@ -104,7 +106,22 @@
           </button>
         </h2>
         <div id="flush-collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
-          <div class="accordion-body">Placeholder content for this accordion, which is intended to demonstrate the <code>.accordion-flush</code> class. This is the second item's accordion body. Let's imagine this being filled with some actual content.</div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Index</th>
+                <th>Predicted Grade</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in csv_data %}
+                <tr>
+                  <td>{{ row['Index'] }}</td>
+                  <td>{{ row['Predicted Grade'] }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         </div>
       </div>
 
