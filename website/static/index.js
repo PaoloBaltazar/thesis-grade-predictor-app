@@ -31,7 +31,11 @@ updateSliderValue('learningEnvironment', 'learningEnvironmentValue');
 document.getElementById('prediction-form').addEventListener('submit', function(e) {
   e.preventDefault();
 
-  const attendance = document.getElementsByName('attendance')[0].value;
+  const daysPresent = document.getElementsByName('days_present')[0].value;
+  const schoolDays = document.getElementsByName('school_days')[0].value;
+
+  const attendance = (daysPresent / schoolDays) * 100
+  console.log(attendance)
   const previousGrades = document.getElementsByName('previous_grades')[0].value;
   const financialSituation = document.getElementsByName('financial_situation')[0].value;
   const learningEnvironment = document.getElementsByName('learning_environment')[0].value;
