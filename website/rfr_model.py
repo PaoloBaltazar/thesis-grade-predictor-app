@@ -1,35 +1,47 @@
 import pandas as pd
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import StandardScaler
 import joblib
 
-df = pd.read_csv('dataset_pilot1.csv')
+# Load data
+df = pd.read_csv('FINAL_DATA2.csv')
+df = pd.get_dummies(df)
 
-features = df[['attendance', 'previous_grades', 'learning_environment', 'financial_situation', 'grade_level']]
-labels = df['grades']
+# Separate features and target (grades)
+X = df.drop(['grades'], axis=1)
+y = df['grades']
 
+# Normalize the features
 scaler = StandardScaler()
-X_scaled = scaler.fit_transform(features)
+X_scaled = scaler.fit_transform(X)
 
-X_train, X_test, y_train, y_test = train_test_split(X_scaled, labels, test_size=0.2, random_state=19)
+# Split data into 80% training, 10% validation, 10% test sets
+X_train, X_temp, y_train, y_temp = train_test_split(X_scaled, y, test_size=0.2, random_state=19)  # 80% train, 20% temp
+X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=19)  # 10% val, 10% test
 
-rfr = RandomForestRegressor(random_state=13)
-
+# Define the parameter grid
 param_grid = {
-    'n_estimators': [50, 100, 200],
-    'max_depth': [None, 10, 20, 30],
-    'min_samples_split': [2, 5, 10],
-    'min_samples_leaf': [1, 2, 4]
+    'n_estimators': [50, 100],
+    'max_depth': [10, 20],
+    'min_samples_split': [5, 10],
+    'min_samples_leaf': [2, 4],
 }
 
-grid_search = GridSearchCV(estimator=rfr, param_grid=param_grid, cv=5, n_jobs=-1)
+# Define the model
+rfr = RandomForestRegressor(random_state=13, bootstrap=True)
+
+# Setup GridSearchCV
+grid_search = GridSearchCV(estimator=rfr, param_grid=param_grid, cv=5, scoring='neg_mean_squared_error', n_jobs=-1)
+
+# Fit GridSearchCV
 grid_search.fit(X_train, y_train)
 
 best_rfr = grid_search.best_estimator_
 
+y_val_pred = best_rfr.predict(X_val)
+y_test_pred = best_rfr.predict(X_test)
 
-# Saving the trained model and scaler to a file
 joblib.dump(best_rfr, 'random_forest_model.pkl')
 joblib.dump(scaler, 'scaler.pkl')
+
