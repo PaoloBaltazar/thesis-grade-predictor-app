@@ -33,7 +33,7 @@ def home():
 
     # Fetch student IDs and predicted grades for the second accordion
     stored_predictions = [
-        {'student_id': row.user_id, 'predicted_grade': row.predictedGrade}
+        {'student_id': row.id, 'predicted_grade': row.predictedGrade}
         for row in input_prediction_data
     ]
 
@@ -76,7 +76,7 @@ def predict():
     # Return the prediction as a JSON response
     return jsonify({
         'prediction': prediction,
-        'student_id': new_data.id  # Returning the new ID (auto-incremented)
+        'student_id': new_data.id  # Returning the auto-incremented ID
     })
 
 
