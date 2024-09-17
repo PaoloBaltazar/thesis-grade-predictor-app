@@ -31,30 +31,37 @@ updateSliderValue('learningEnvironment', 'learningEnvironmentValue');
 document.getElementById('prediction-form').addEventListener('submit', function(e) {
   e.preventDefault();
 
-  const daysPresent = document.getElementsByName('days_present')[0].value;
-  const schoolDays = document.getElementsByName('school_days')[0].value;
+  const daysPresent = document.querySelector('input[name="days_present"]').value;
+  const schoolDays = document.querySelector('input[name="school_days"]').value;
 
-  const attendance = (daysPresent / schoolDays) * 100
-  console.log(attendance)
-  const previousGrades = document.getElementsByName('previous_grades')[0].value;
-  const financialSituation = document.getElementsByName('financial_situation')[0].value;
-  const learningEnvironment = document.getElementsByName('learning_environment')[0].value;
+  const attendance = (daysPresent / schoolDays) * 100;
+  const previous_grades = document.querySelector('input[name="previous_grades"]').value;
+  const financial_situation = document.querySelector('input[name="financial_situation"]').value;
+  const learning_environment = document.querySelector('input[name="learning_environment"]').value;
+  const grade_level = document.querySelector('select[name="grade_level"]').value;
 
   const data = {
-      features: [attendance, previousGrades, financialSituation, learningEnvironment]
+    'attendance': attendance,
+    'previous_grades': previous_grades,
+    'financial_situation': financial_situation,
+    'learning_environment': learning_environment,
+    'grade_level': grade_level  // Add the grade level here
   };
 
+  // Send the data to the backend via POST request
   fetch('/predict', {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(data)
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data),
   })
   .then(response => response.json())
   .then(data => {
-      document.getElementById('prediction-result').innerText = 'Predicted Grade: ' + data.prediction;
+      document.getElementById('prediction-result').textContent = 'Predicted Grade: ' + data.prediction;
   })
-  .catch(error => console.error('Error:', error));
+  .catch(error => {
+      console.error('Error:', error);
+  });
 });
 

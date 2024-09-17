@@ -27,6 +27,17 @@
   <!-- Attendance -->
    <form id="prediction-form">
 
+    <!-- Grade Level -->
+    <div class="mb-3">
+      <label for="gradeLevel" class="form-label">Grade Level</label>
+      <select name="grade_level" id="gradeLevel" class="form-select">
+          <option selected>Select Grade Level</option>
+          <option value="4">Grade 4</option>
+          <option value="5">Grade 5</option>
+          <option value="6">Grade 6</option>
+      </select>
+    </div>
+
     <div class="mb-4">
       <label class="form-label">Attendance</label>
       <div class="input-group mb-4">
@@ -44,14 +55,14 @@
     <!-- Financial Situation Slider -->
     <div class="mb-3">
         <label for="financialSituation" class="form-label d-block">Financial Situation</label>
-        <input type="range" name="financial_situation" class="form-range" min="1" max="5" step="1" id="financialSituation" value="3">
+        <input type="range" name="financial_situation" class="form-range" min="1" max="5" step="0.01" id="financialSituation" value="3">
         <span class="d-block text-center text-muted" id="financialSituationValue">3</span>
     </div>
   
     <!-- Learning Environment Slider -->
     <div class="mb-3">
         <label for="learningEnvironment" class="form-label d-block">Learning Environment</label>
-        <input type="range" name="learning_environment" class="form-range" min="1" max="5" step="1" id="learningEnvironment" value="3">
+        <input type="range" name="learning_environment" class="form-range" min="1" max="5" step="0.01" id="learningEnvironment" value="3">
         <span class="d-block text-center text-muted" id="learningEnvironmentValue">3</span>
     </div>
     <input class="btn btn-primary" type="submit" value="Submit">

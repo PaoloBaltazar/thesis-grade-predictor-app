@@ -21,9 +21,25 @@ def home():
 @views.route('/predict', methods=['POST'])
 def predict():
     data = request.json
-    features = np.array(data['features']).reshape(1, -1)
+    print(f"Received data: {data}")
+    
+    # Extract the submitted data including grade_level
+    attendance = float(data['attendance'])
+    financial_situation = float(data['financial_situation'])
+    learning_environment = float(data['learning_environment'])
+    previous_grades = float(data['previous_grades'])
+    grade_level = int(data['grade_level'])  # Get grade level
+
+    # Combine all the inputs into a feature array
+    features = np.array([attendance, financial_situation, learning_environment, previous_grades, grade_level]).reshape(1, -1)
+
+    # Apply scaling to the input features
     features = scaler.transform(features)
+
+    # Make the prediction using the loaded model
     prediction = model.predict(features)
+
+    # Return the prediction as JSON
     return jsonify({'prediction': prediction.tolist()})
 
 

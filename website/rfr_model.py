@@ -5,9 +5,9 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import StandardScaler
 import joblib
 
-df = pd.read_csv('data_prevgrade.csv')
+df = pd.read_csv('dataset_pilot1.csv')
 
-features = df[['attendance', 'financial_situation', 'learning_environment', 'previous_grades']]
+features = df[['attendance', 'previous_grades', 'learning_environment', 'financial_situation', 'grade_level']]
 labels = df['grades']
 
 scaler = StandardScaler()
