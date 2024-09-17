@@ -97,20 +97,28 @@
         <div id="flush-collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
           <table class="table">
             <thead>
-              <tr>
-                <th>Index</th>
-                <th>Predicted Grade</th>
-              </tr>
+                <tr>
+                    <th>Attendance</th>
+                    <th>Previous Grades</th>
+                    <th>Financial Situation</th>
+                    <th>Learning Environment</th>
+                    <th>Grade Level</th>
+                    <th>Predicted Grade</th>
+                </tr>
             </thead>
             <tbody>
-              {% for row in csv_data %}
-                <tr>
-                  <td>{{ row['Student No.'] }}</td>
-                  <td>{{ row['Predicted Grade'] }}</td>
-                </tr>
-              {% endfor %}
+                {% for row in csv_data %}
+                    <tr>
+                        <td>{{ row['attendance'] }}</td>
+                        <td>{{ row['previous_grades'] }}</td>
+                        <td>{{ row['financial_situation'] }}</td>
+                        <td>{{ row['learning_environment'] }}</td>
+                        <td>{{ row['grade_level'] }}</td>
+                        <td>{{ row['predicted_grade'] }}</td>
+                    </tr>
+                {% endfor %}
             </tbody>
-          </table>
+        </table>
         </div>
       </div>
 
@@ -129,24 +137,3 @@
 
 
 {% endblock %}
-
-<!-- <h1>This is the homepage</h1>
-<a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
-
-<div class="hero-section">
-  <p>
-      Grade Predictor App
-  </p>
-</div>
-
-<div>
-  <form id="prediction-form">
-      <input type="number" name="attendance" placeholder="Attendance">
-      <input type="number" name="financial_situation" placeholder="Financial Situation">
-      <input type="number" name="learning_environment" placeholder="Learning Environment">
-      <input type="number" name="previous_grades" placeholder="Previous Grades">
-      <button type="submit">Predict</button>
-  </form>
-</div>
-
-<div id="prediction-result"></div> -->

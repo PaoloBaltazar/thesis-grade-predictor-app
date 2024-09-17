@@ -56,12 +56,18 @@ document.getElementById('prediction-form').addEventListener('submit', function(e
     },
     body: JSON.stringify(data),
   })
-  .then(response => response.json())
+  .then(response => {
+    if (!response.ok) {
+      return response.json().then(err => { throw new Error(err.error) });
+    }
+    return response.json();
+  })
   .then(data => {
       document.getElementById('prediction-result').textContent = 'Predicted Grade: ' + data.prediction;
   })
   .catch(error => {
       console.error('Error:', error);
+      alert('Prediction failed: ' + error.message);  // Display the error to the user
   });
 });
 

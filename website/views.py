@@ -4,6 +4,9 @@ import joblib
 import numpy as np
 import csv
 import os
+from .db_model import Data, User
+from . import db
+from flask_login import current_user
 
 views = Blueprint('views', __name__)
 
@@ -13,34 +16,61 @@ scaler = joblib.load('scaler.pkl')
 UPLOAD_FOLDER = 'uploads'
 
 @views.route('/')
-def home():
+def home(): 
+    # Fetch previous grade data from CSV file
     csv_prevdata = parse_csv('data_prevgrade.csv')
-    csv_data = []  # Initialize as an empty list for the predicted data
+    
+    # Fetch user-specific data from the database
+    user_data = Data.query.filter_by(user_id=current_user.id).all() if current_user.is_authenticated else []
+
+    # Prepare data for rendering in the template
+    csv_data = [
+        {
+            'attendance': row.attendance,
+            'previous_grades': row.previousGrade,
+            'financial_situation': row.financialSituation,
+            'learning_environment': row.learningEnvironment,
+            'grade_level': row.gradeLevel,
+            'predicted_grade': row.predictedGrade
+        }
+        for row in user_data
+    ]
+
     return render_template("home.html", csv_prevdata=csv_prevdata, csv_data=csv_data)
 
 @views.route('/predict', methods=['POST'])
 def predict():
+    if not current_user.is_authenticated:
+        return jsonify({'error': 'User not authenticated'}), 401
+
     data = request.json
-    print(f"Received data: {data}")
-    
-    # Extract the submitted data including grade_level
-    attendance = float(data['attendance'])
-    financial_situation = float(data['financial_situation'])
-    learning_environment = float(data['learning_environment'])
-    previous_grades = float(data['previous_grades'])
-    grade_level = int(data['grade_level'])  # Get grade level
+    try:
+        attendance = float(data['attendance'])
+        previous_grades = float(data['previous_grades'])
+        financial_situation = float(data['financial_situation'])
+        learning_environment = float(data['learning_environment'])
+        grade_level = int(data['grade_level'])
+    except (KeyError, ValueError) as e:
+        return jsonify({'error': f'Invalid input: {str(e)}'}), 400
 
-    # Combine all the inputs into a feature array
     features = np.array([attendance, financial_situation, learning_environment, previous_grades, grade_level]).reshape(1, -1)
-
-    # Apply scaling to the input features
     features = scaler.transform(features)
+    prediction = model.predict(features)[0]
 
-    # Make the prediction using the loaded model
-    prediction = model.predict(features)
+    # Save data and prediction to the database
+    new_data = Data(
+        attendance=attendance,
+        previousGrade=previous_grades,
+        financialSituation=financial_situation,
+        learningEnvironment=learning_environment,
+        gradeLevel=grade_level,
+        predictedGrade=prediction,
+        user_id=current_user.id
+    )
+    db.session.add(new_data)
+    db.session.commit()
 
-    # Return the prediction as JSON
-    return jsonify({'prediction': prediction.tolist()})
+    return jsonify({'prediction': prediction})
 
 
 def parse_csv(filepath):
@@ -69,7 +99,7 @@ def upload_file():
 
         # Process the CSV file
         df = pd.read_csv(filepath)
-        features = df[['attendance', 'financial_situation', 'learning_environment', 'previous_grades']]
+        features = df[['attendance', 'financial_situation', 'learning_environment', 'grade_level', 'previous_grades']]
         X_scaled = scaler.transform(features)
         predictions = model.predict(X_scaled)
 
