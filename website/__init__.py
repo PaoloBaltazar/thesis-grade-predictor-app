@@ -1,4 +1,5 @@
 from flask import Flask
+import os
 from flask_sqlalchemy import SQLAlchemy
 from os import path
 from flask_login import LoginManager
@@ -10,7 +11,7 @@ DB_NAME = "database.db"
 def create_app():
   app = Flask(__name__)
   app.config['SECRET_KEY'] = 'thesisgradepredictorapp'
-  app.config['SQLALCHEMY_DATABASE_URI']  = f'sqlite:///{DB_NAME}' #where data base is stored
+  app.config['SQLALCHEMY_DATABASE_URI']  = os.getenv('DATABASE_URL', 'sqlite:///database.db')
   db.init_app(app)
 
   from .views import views
