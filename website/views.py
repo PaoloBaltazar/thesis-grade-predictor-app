@@ -105,10 +105,7 @@ def upload_file():
     if file and file.filename.endswith('.csv'):
         # Ensure the upload directory exists
         if not os.path.exists(UPLOAD_FOLDER):
-            try:
-                os.makedirs(UPLOAD_FOLDER)  # Create the directory
-            except OSError as e:
-                return f"Error creating upload directory: {e}"
+            os.makedirs(UPLOAD_FOLDER)
 
         filepath = os.path.join(UPLOAD_FOLDER, file.filename)
 
@@ -118,9 +115,38 @@ def upload_file():
         except PermissionError as e:
             return f"Permission error: {e}"
 
-        # Process the CSV file (rest of your logic)
+        # Process the CSV file
         df = pd.read_csv(filepath)
-        # Further code to process and make predictions
+
+        # Check if the required columns exist
+        required_columns = ['attendance', 'financial_situation', 'learning_environment', 'grade_level', 'previous_grades']
+        if not all(col in df.columns for col in required_columns):
+            return "Missing required columns in the uploaded CSV file."
+
+        # Predict grades and add entries to the database
+        for index, row in df.iterrows():
+            try:
+                features = np.array([row['attendance'], row['financial_situation'], row['learning_environment'], row['previous_grades'], row['grade_level']]).reshape(1, -1)
+                features_scaled = scaler.transform(features)
+                prediction = model.predict(features_scaled)[0]
+
+                # Save data and prediction to the database
+                new_data = Data(
+                    attendance=row['attendance'],
+                    previousGrade=row['previous_grades'],
+                    financialSituation=row['financial_situation'],
+                    learningEnvironment=row['learning_environment'],
+                    gradeLevel=row['grade_level'],
+                    predictedGrade=prediction,
+                    user_id=current_user.id
+                )
+                db.session.add(new_data)
+
+            except Exception as e:
+                print(f"Error processing row {index}: {e}")
+                continue
+
+        db.session.commit()  # Commit all new entries to the database
 
         return redirect(url_for('views.home'))
 
