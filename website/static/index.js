@@ -20,74 +20,82 @@ function updateSliderValue(sliderId, valueId) {
     const valueDisplay = document.getElementById(valueId);
 
     slider.addEventListener('input', () => {
-      valueDisplay.textContent = slider.value;
+        valueDisplay.textContent = slider.value;
     });
-  }
+}
 
-// Initialize the sliders
+// Initialize sliders
 updateSliderValue('financialSituation', 'financialSituationValue');
 updateSliderValue('learningEnvironment', 'learningEnvironmentValue');
 
 document.getElementById('prediction-form').addEventListener('submit', function (e) {
-  e.preventDefault();
+    e.preventDefault();  // Prevent the default form submission
 
-  const daysPresent = document.querySelector('input[name="days_present"]').value;
-  const schoolDays = document.querySelector('input[name="school_days"]').value;
-  const previous_grades = document.querySelector('input[name="previous_grades"]').value;
-  const financial_situation = document.querySelector('input[name="financial_situation"]').value;
-  const learning_environment = document.querySelector('input[name="learning_environment"]').value;
-  const grade_level = document.querySelector('select[name="grade_level"]').value;
+    const daysPresent = document.querySelector('input[name="days_present"]').value;
+    const schoolDays = document.querySelector('input[name="school_days"]').value;
+    const previousGrades = document.querySelector('input[name="previous_grades"]').value;
+    const financialSituation = document.querySelector('input[name="financial_situation"]').value;
+    const learningEnvironment = document.querySelector('input[name="learning_environment"]').value;
+    const gradeLevel = document.querySelector('select[name="grade_level"]').value;
 
-  if (schoolDays === '0' || daysPresent === '' || previous_grades === '') {
-      alert('Please fill in all fields.');
-      return;
-  }
+    if (!daysPresent || !schoolDays || !previousGrades) {
+        alert('Please fill in all fields.');
+        return;
+    }
 
-  const attendance = (daysPresent / schoolDays) * 100;
+    const attendance = (daysPresent / schoolDays) * 100;
 
-  const data = {
-      'attendance': attendance,
-      'previous_grades': previous_grades,
-      'financial_situation': financial_situation,
-      'learning_environment': learning_environment,
-      'grade_level': grade_level
-  };
+    const data = {
+        attendance: attendance,
+        previous_grades: previousGrades,
+        financial_situation: financialSituation,
+        learning_environment: learningEnvironment,
+        grade_level: gradeLevel
+    };
 
-  // Send the data to the backend via POST request
-  fetch('/predict', {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-  })
-  .then(response => response.json())
-  .then(data => {
-      if (data.error) {
-          throw new Error(data.error);
-      }
+    // Send the data to the server
+    fetch('/predict', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.error) {
+            throw new Error(result.error);
+        }
 
-      // Show the predicted grade
-      document.getElementById('prediction-result').textContent = 'Predicted Grade: ' + data.prediction;
+        // Update the first accordion with the new data (Inputs and Predicted Grades)
+        const firstAccordionTable = document.querySelector('#flush-collapseTwo tbody');
+        const newRowInputs = document.createElement('tr');
+        newRowInputs.innerHTML = `
+            <td>${attendance.toFixed(2)}</td>
+            <td>${previousGrades}</td>
+            <td>${financialSituation}</td>
+            <td>${learningEnvironment}</td>
+            <td>${gradeLevel}</td>
+            <td>${result.prediction.toFixed(2)}</td>
+        `;
+        firstAccordionTable.appendChild(newRowInputs);
 
-      // Dynamically update the input-prediction table
-      const inputPredictionTableBody = document.querySelector('#accordionFlushExample tbody');
-      const newRowInputs = document.createElement('tr');
-      newRowInputs.innerHTML = `
-          <td>${attendance.toFixed(2)}</td>
-          <td>${previous_grades}</td>
-          <td>${financial_situation}</td>
-          <td>${learning_environment}</td>
-          <td>${grade_level}</td>
-          <td>${data.prediction.toFixed(2)}</td>
-      `;
-      inputPredictionTableBody.appendChild(newRowInputs);  // Add the new row to the table
-  })
-  .catch(error => {
-      console.error('Error:', error);
-      alert('Prediction failed: ' + error.message);  // Display the error to the user
-  });
+        // Update the second accordion with the new data (Student No. and Grade Predicted)
+        const secondAccordionTable = document.querySelector('#panelsStayOpen-collapseTwo tbody');
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `
+            <td>${result.student_id}</td>
+            <td>${result.prediction.toFixed(2)}</td>
+        `;
+        secondAccordionTable.appendChild(newRow);
+
+        // Optionally, show the predicted grade in an alert or a dedicated section
+        document.getElementById('prediction-result').textContent = 'Predicted Grade: ' + result.prediction.toFixed(2);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Prediction failed: ' + error.message);
+    });
 });
-
 
 

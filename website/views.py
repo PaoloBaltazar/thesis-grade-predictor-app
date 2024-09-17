@@ -73,10 +73,10 @@ def predict():
     db.session.add(new_data)
     db.session.commit()
 
-    # Return the prediction as a JSON response
+    # Return the prediction and the auto-incremented ID as a JSON response
     return jsonify({
         'prediction': prediction,
-        'student_id': new_data.id  # Returning the auto-incremented ID
+        'student_id': new_data.id  # Returning the new ID (auto-incremented)
     })
 
 
