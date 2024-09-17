@@ -17,13 +17,8 @@ UPLOAD_FOLDER = 'uploads'
 
 @views.route('/')
 def home(): 
-    # Fetch previous grade data from CSV file
-    csv_prevdata = parse_csv('data_prevgrade.csv')
-    
-    # Fetch user-specific data from the database
-    user_data = Data.query.filter_by(user_id=current_user.id).all() if current_user.is_authenticated else []
-
-    # Prepare data for rendering in the template
+    # Fetch previous data from the database for the first accordion (input and prediction results)
+    input_prediction_data = Data.query.all()
     csv_data = [
         {
             'attendance': row.attendance,
@@ -33,10 +28,16 @@ def home():
             'grade_level': row.gradeLevel,
             'predicted_grade': row.predictedGrade
         }
-        for row in user_data
+        for row in input_prediction_data
     ]
 
-    return render_template("home.html", csv_prevdata=csv_prevdata, csv_data=csv_data)
+    # Fetch student IDs and predicted grades for the second accordion
+    stored_predictions = [
+        {'student_id': row.user_id, 'predicted_grade': row.predictedGrade}
+        for row in input_prediction_data
+    ]
+
+    return render_template("home.html", csv_data=csv_data, stored_predictions=stored_predictions)
 
 @views.route('/predict', methods=['POST'])
 def predict():
@@ -53,11 +54,12 @@ def predict():
     except (KeyError, ValueError) as e:
         return jsonify({'error': f'Invalid input: {str(e)}'}), 400
 
+    # Predict the grade
     features = np.array([attendance, financial_situation, learning_environment, previous_grades, grade_level]).reshape(1, -1)
     features = scaler.transform(features)
     prediction = model.predict(features)[0]
 
-    # Save data and prediction to the database
+    # Create a new data entry in the database
     new_data = Data(
         attendance=attendance,
         previousGrade=previous_grades,
@@ -65,12 +67,17 @@ def predict():
         learningEnvironment=learning_environment,
         gradeLevel=grade_level,
         predictedGrade=prediction,
-        user_id=current_user.id
+        user_id=current_user.id  # Store the current user's ID
     )
+    
     db.session.add(new_data)
     db.session.commit()
 
-    return jsonify({'prediction': prediction})
+    # Return the prediction as a JSON response
+    return jsonify({
+        'prediction': prediction,
+        'student_id': new_data.id  # Returning the new ID (auto-incremented)
+    })
 
 
 def parse_csv(filepath):
