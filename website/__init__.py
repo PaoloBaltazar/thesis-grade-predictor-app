@@ -11,7 +11,7 @@ DB_NAME = "database.db"
 def create_app():
   app = Flask(__name__)
   app.config['SECRET_KEY'] = 'thesisgradepredictorapp'
-  app.config['SQLALCHEMY_DATABASE_URI']  = os.getenv('DATABASE_URL', 'sqlite:///database.db')
+  app.config['SQLALCHEMY_DATABASE_URI']  = os.getenv('DATABASE_URL', 'postgres://thesis_database_user:77GHKgFXEYDY0atVLc0APBxUhkMJmOSR@dpg-crktbtrv2p9s7e7cgm0-a:5432/thesis_database')
   db.init_app(app)
 
   from .views import views
