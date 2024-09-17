@@ -16,9 +16,15 @@ scaler = joblib.load('scaler.pkl')
 UPLOAD_FOLDER = 'uploads'
 
 @views.route('/')
+@views.route('/')
 def home(): 
-    # Fetch previous data from the database for the first accordion (input and prediction results)
-    input_prediction_data = Data.query.all()
+    if not current_user.is_authenticated:
+        return redirect(url_for('auth.login'))
+
+    # Fetch previous data from the database for the current user only
+    input_prediction_data = Data.query.filter_by(user_id=current_user.id).all()
+
+    # Prepare data for the first accordion (Inputs and Predicted Grades)
     csv_data = [
         {
             'attendance': row.attendance,
@@ -31,7 +37,7 @@ def home():
         for row in input_prediction_data
     ]
 
-    # Fetch student IDs and predicted grades for the second accordion
+    # Prepare data for the second accordion (Student No. and Predicted Grade)
     stored_predictions = [
         {'student_id': row.id, 'predicted_grade': row.predictedGrade}
         for row in input_prediction_data
@@ -39,13 +45,14 @@ def home():
 
     return render_template("home.html", csv_data=csv_data, stored_predictions=stored_predictions)
 
+
 @views.route('/predict', methods=['POST'])
 def predict():
     if not current_user.is_authenticated:
         return jsonify({'error': 'User not authenticated'}), 401
 
     data = request.json
-    try:
+    try:    
         attendance = float(data['attendance'])
         previous_grades = float(data['previous_grades'])
         financial_situation = float(data['financial_situation'])
@@ -88,7 +95,6 @@ def parse_csv(filepath):
    
 @views.route('/upload', methods=['POST'])
 def upload_file():
-    csv_prevdata = parse_csv('data_prevgrade.csv')  # Parse the previous grade data
     if 'file' not in request.files:
         return redirect(url_for('views.home'))
 
@@ -99,25 +105,23 @@ def upload_file():
     if file and file.filename.endswith('.csv'):
         # Ensure the upload directory exists
         if not os.path.exists(UPLOAD_FOLDER):
-            os.makedirs(UPLOAD_FOLDER)
+            try:
+                os.makedirs(UPLOAD_FOLDER)  # Create the directory
+            except OSError as e:
+                return f"Error creating upload directory: {e}"
 
         filepath = os.path.join(UPLOAD_FOLDER, file.filename)
-        file.save(filepath)
 
-        # Process the CSV file
+        try:
+            # Save the uploaded file
+            file.save(filepath)
+        except PermissionError as e:
+            return f"Permission error: {e}"
+
+        # Process the CSV file (rest of your logic)
         df = pd.read_csv(filepath)
-        features = df[['attendance', 'financial_situation', 'learning_environment', 'grade_level', 'previous_grades']]
-        X_scaled = scaler.transform(features)
-        predictions = model.predict(X_scaled)
+        # Further code to process and make predictions
 
-        # Prepare data to be rendered in the template
-        predicted_df = pd.DataFrame({
-            'Index': df.index,
-            'Predicted Grade': predictions
-        })
+        return redirect(url_for('views.home'))
 
-        # Convert the DataFrame to a dictionary to pass to the template
-        csv_data = predicted_df.to_dict('records')
-
-        return render_template("home.html", csv_prevdata=csv_prevdata, csv_data=csv_data)
     return redirect(url_for('views.home'))
