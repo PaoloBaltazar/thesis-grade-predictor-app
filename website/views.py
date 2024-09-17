@@ -8,14 +8,22 @@ from .db_model import Data, User
 from . import db
 from flask_login import current_user
 
+UPLOAD_FOLDER = 'uploads'
+
 views = Blueprint('views', __name__)
 
 model = joblib.load('random_forest_model.pkl')
 scaler = joblib.load('scaler.pkl')
 
-UPLOAD_FOLDER = 'uploads'
+# Helper function to get the next user-specific prediction ID
+def get_next_user_prediction_id(user_id):
+    last_prediction = Data.query.filter_by(user_id=user_id).order_by(Data.user_prediction_id.desc()).first()
+    if last_prediction:
+        return last_prediction.user_prediction_id + 1
+    else:
+        return 1  # Start from 1 if no predictions exist
 
-@views.route('/')
+# Routes for the app
 @views.route('/')
 def home(): 
     if not current_user.is_authenticated:
@@ -39,12 +47,11 @@ def home():
 
     # Prepare data for the second accordion (Student No. and Predicted Grade)
     stored_predictions = [
-        {'student_id': row.id, 'predicted_grade': row.predictedGrade}
+        {'student_id': row.user_prediction_id, 'predicted_grade': row.predictedGrade}
         for row in input_prediction_data
     ]
 
     return render_template("home.html", csv_data=csv_data, stored_predictions=stored_predictions)
-
 
 @views.route('/predict', methods=['POST'])
 def predict():
@@ -66,6 +73,9 @@ def predict():
     features = scaler.transform(features)
     prediction = model.predict(features)[0]
 
+    # Get the next user-specific prediction ID
+    user_prediction_id = get_next_user_prediction_id(current_user.id)
+
     # Create a new data entry in the database
     new_data = Data(
         attendance=attendance,
@@ -74,16 +84,17 @@ def predict():
         learningEnvironment=learning_environment,
         gradeLevel=grade_level,
         predictedGrade=prediction,
-        user_id=current_user.id  # Store the current user's ID
+        user_id=current_user.id,
+        user_prediction_id=user_prediction_id  # Store the user-specific ID
     )
     
     db.session.add(new_data)
     db.session.commit()
 
-    # Return the prediction and the auto-incremented ID as a JSON response
+    # Return the prediction and the user-specific ID as a JSON response
     return jsonify({
         'prediction': prediction,
-        'student_id': new_data.id  # Returning the new ID (auto-incremented)
+        'student_id': new_data.user_prediction_id  # Returning the user-specific ID
     })
 
 
@@ -130,6 +141,9 @@ def upload_file():
                 features_scaled = scaler.transform(features)
                 prediction = model.predict(features_scaled)[0]
 
+                # Get the next user-specific prediction ID
+                user_prediction_id = get_next_user_prediction_id(current_user.id)
+
                 # Save data and prediction to the database
                 new_data = Data(
                     attendance=row['attendance'],
@@ -138,7 +152,8 @@ def upload_file():
                     learningEnvironment=row['learning_environment'],
                     gradeLevel=row['grade_level'],
                     predictedGrade=prediction,
-                    user_id=current_user.id
+                    user_id=current_user.id,
+                    user_prediction_id=user_prediction_id  # Assign user-specific prediction ID here
                 )
                 db.session.add(new_data)
 

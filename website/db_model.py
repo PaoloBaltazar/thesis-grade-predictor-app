@@ -3,7 +3,8 @@ from flask_login import UserMixin
 from sqlalchemy.sql import func
 
 class Data(db.Model):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)  # Ensure autoincrement is enabled
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_prediction_id = db.Column(db.Integer)  # User-specific prediction ID
     attendance = db.Column(db.Float)
     previousGrade = db.Column(db.Float)
     financialSituation = db.Column(db.Float)
@@ -12,6 +13,7 @@ class Data(db.Model):
     predictedGrade = db.Column(db.Float)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     user = db.relationship('User', backref=db.backref('data', lazy=True))
+
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
