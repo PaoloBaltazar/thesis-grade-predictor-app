@@ -17,6 +17,6 @@ class Data(db.Model):
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(150), unique=True)
-    name = db.Column(db.String(150))
-    password = db.Column(db.String(150))
+    email = db.Column(db.String(150), unique=True, nullable=False)
+    name = db.Column(db.String(255), nullable=True)  # Increase the length to 255 characters
+    password = db.Column(db.String(150), nullable=False)
