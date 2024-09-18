@@ -12,7 +12,8 @@ def create_app():
     app = Flask(__name__)
 
     # Configuring database URI from environment variable
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://thesis_db_ed13_user:2EynCtGQrO7mnQIFGerPNqcrdC0Eozr3@dpg-crl4ncij1k6c73flts5g-a/thesis_db_ed13'
+    # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://thesis_db_ed13_user:2EynCtGQrO7mnQIFGerPNqcrdC0Eozr3@dpg-crl4ncij1k6c73flts5g-a/thesis_db_ed13'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
     
     # Additional configurations
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
