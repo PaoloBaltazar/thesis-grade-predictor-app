@@ -5,15 +5,16 @@ from os import path
 from flask_login import LoginManager
 
 db = SQLAlchemy()
-DB_NAME = "database.db"
 
 def create_app():
     app = Flask(__name__)
+
+    # Configuring database URI from environment variable
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
     
-    # Securely load sensitive configurations
-    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'fallback-secret-key')
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///default.db')
-    
+    # Additional configurations
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
     db.init_app(app)
 
     # Register blueprints
@@ -42,7 +43,6 @@ def create_app():
 
 def create_database(app):
     # Only useful for SQLite in local development
-    if not path.exists('website/' + DB_NAME):
-        with app.app_context():
-            db.create_all()
-        print('Created Database!')
+    with app.app_context():
+        db.create_all()
+    print('Database initialized!')
