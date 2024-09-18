@@ -18,6 +18,8 @@ def create_app():
     # Additional configurations
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+    app.config['SECRET_KEY'] = 'thesis_local'
+
     db.init_app(app)
     migrate.init_app(app, db)  # Initialize Flask-Migrate with the app and database
 
