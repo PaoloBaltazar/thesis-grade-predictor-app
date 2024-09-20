@@ -10,7 +10,8 @@ body {
   border-right: 1px solid #dee2e6;
   position: relative;
   transition: transform 0.15s ease, width 0.15s ease;
-  overflow: hidden;
+  overflow-y: auto; /* Enables vertical scrolling */
+  height: 100vh; /* Ensures the sidebar takes the full height of the viewport */
   white-space: nowrap;
 }
   .sidebar.collapsed {
@@ -50,9 +51,11 @@ body {
   }
 
   .sidebar {
-    position: absolute;
+    width: 100%; /* Sidebar can take full width on small screens */
+    position: fixed; /* Fix the sidebar to the side of the screen */
+    height: 100vh; /* Full screen height */
     z-index: 1000;
-    height: 100%;
+    overflow-y: auto; /* Enable scrolling */
   }
 
   .sidebar.collapsed {
