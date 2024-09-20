@@ -53,13 +53,35 @@ def home():
 
     return render_template("home.html", csv_data=csv_data, stored_predictions=stored_predictions)
 
+# Helper function to get the next user-specific prediction ID
+def get_next_user_prediction_id(user_id):
+    last_prediction = Data.query.filter_by(user_id=user_id).order_by(Data.user_prediction_id.desc()).first()
+    if last_prediction:
+        return last_prediction.user_prediction_id + 1
+    else:
+        return 1  # Start from 1 if no predictions exist
+
+# Helper function to classify grades
+def classify_grade(grade):
+    if grade >= 90:
+        return "Outstanding"
+    elif 85 <= grade < 90:
+        return "Very Satisfactory"
+    elif 80 <= grade < 85:
+        return "Satisfactory"
+    elif 75 <= grade < 80:
+        return "Fairly Satisfactory"
+    else:
+        return "Did not Meet Expectations"
+
+# Route to predict based on manual input
 @views.route('/predict', methods=['POST'])
 def predict():
     if not current_user.is_authenticated:
         return jsonify({'error': 'User not authenticated'}), 401
 
     data = request.json
-    try:    
+    try:
         attendance = float(data['attendance'])
         previous_grades = float(data['previous_grades'])
         financial_situation = float(data['financial_situation'])
@@ -68,10 +90,15 @@ def predict():
     except (KeyError, ValueError) as e:
         return jsonify({'error': f'Invalid input: {str(e)}'}), 400
 
-    # Predict the grade
+    # Prepare features for prediction
     features = np.array([attendance, financial_situation, learning_environment, previous_grades, grade_level]).reshape(1, -1)
     features = scaler.transform(features)
+    
+    # Predict the grade
     prediction = model.predict(features)[0]
+
+    # Classify the predicted grade
+    remarks = classify_grade(prediction)
 
     # Get the next user-specific prediction ID
     user_prediction_id = get_next_user_prediction_id(current_user.id)
@@ -84,6 +111,7 @@ def predict():
         learningEnvironment=learning_environment,
         gradeLevel=grade_level,
         predictedGrade=prediction,
+        remarks=remarks,  # Store remarks
         user_id=current_user.id,
         user_prediction_id=user_prediction_id  # Store the user-specific ID
     )
@@ -91,10 +119,11 @@ def predict():
     db.session.add(new_data)
     db.session.commit()
 
-    # Return the prediction and the user-specific ID as a JSON response
+    # Return the prediction, user-specific ID, and remarks as a JSON response
     return jsonify({
         'prediction': prediction,
-        'student_id': new_data.user_prediction_id  # Returning the user-specific ID
+        'student_id': new_data.user_prediction_id,
+        'remarks': remarks  # Return remarks to the frontend
     })
 
 
@@ -141,6 +170,9 @@ def upload_file():
                 features_scaled = scaler.transform(features)
                 prediction = model.predict(features_scaled)[0]
 
+                # Classify the predicted grade
+                remarks = classify_grade(prediction)
+
                 # Get the next user-specific prediction ID
                 user_prediction_id = get_next_user_prediction_id(current_user.id)
 
@@ -152,6 +184,7 @@ def upload_file():
                     learningEnvironment=row['learning_environment'],
                     gradeLevel=row['grade_level'],
                     predictedGrade=prediction,
+                    remarks=remarks,  # Store remarks
                     user_id=current_user.id,
                     user_prediction_id=user_prediction_id  # Assign user-specific prediction ID here
                 )

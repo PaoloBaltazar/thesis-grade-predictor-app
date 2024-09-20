@@ -77,6 +77,7 @@ document.getElementById('prediction-form').addEventListener('submit', function (
             <td>${learningEnvironment}</td>
             <td>${gradeLevel}</td>
             <td>${result.prediction.toFixed(2)}</td>
+            <td>${result.remarks}</td> <!-- Add remarks -->
         `;
         firstAccordionTable.appendChild(newRowInputs);
 
@@ -86,6 +87,7 @@ document.getElementById('prediction-form').addEventListener('submit', function (
         newRow.innerHTML = `
             <td>${result.student_id}</td>
             <td>${result.prediction.toFixed(2)}</td>
+            <td>${result.remarks}</td> <!-- Add remarks -->
         `;
         secondAccordionTable.appendChild(newRow);
 
@@ -97,5 +99,6 @@ document.getElementById('prediction-form').addEventListener('submit', function (
         alert('Prediction failed: ' + error.message);
     });
 });
+
 
 

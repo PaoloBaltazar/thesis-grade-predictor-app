@@ -104,6 +104,7 @@
                     <th>Learning Environment</th>
                     <th>Grade Level</th>
                     <th>Predicted Grade</th>
+                    <th>Remarks</th> <!-- Add remarks column -->
                 </tr>
             </thead>
             <tbody>
@@ -115,10 +116,12 @@
                         <td>{{ row['learning_environment'] }}</td>
                         <td>{{ row['grade_level'] }}</td>
                         <td>{{ row['predicted_grade'] }}</td>
+                        <td>{{ row['remarks'] }}</td> <!-- Display remarks -->
                     </tr>
                 {% endfor %}
             </tbody>
-        </table>
+          </table>
+        
         </div>
       </div>
 
@@ -130,22 +133,24 @@
         </h2>
         <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse">
             <div class="accordion-body">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Predicted Grade</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for row in stored_predictions %}
+              <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Predicted Grade</th>
+                        <th>Remarks</th> <!-- Add remarks column -->
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in stored_predictions %}
                         <tr>
                             <td>{{ row['student_id'] }}</td>
                             <td>{{ row['predicted_grade'] }}</td>
+                            <td>{{ row['remarks'] }}</td> <!-- Display remarks -->
                         </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                    {% endfor %}
+                </tbody>
+              </table>
             </div>
         </div>
     </div>
