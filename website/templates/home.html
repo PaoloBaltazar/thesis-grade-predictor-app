@@ -8,6 +8,10 @@
     <span class="toggle-btn collapse-btn" id="toggle-btn">&#60;</span>
     <h5>File Upload</h5>
   </div>
+
+  <div style="margin-top: 20px; margin-bottom: 20px;">
+    <a href="{{ url_for('views.download_template') }}" class="btn btn-secondary">Download CSV Template</a>
+  </div>
   
   <form id="file-upload-form" action="{{ url_for('views.upload_file') }}" method="post" enctype="multipart/form-data">
     <div class="mb-3">
@@ -15,6 +19,7 @@
       <input class="form-control" type="file" name="file" id="formFile" accept=".csv" required>
       <br>
       <input class="btn btn-primary" type="submit" value="Submit">
+      
     </div>
   </form>
 

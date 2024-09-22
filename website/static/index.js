@@ -70,7 +70,7 @@ document.getElementById('prediction-form').addEventListener('submit', function (
         // Update the first accordion with the new data (Inputs and Predicted Grades)
         const firstAccordionTable = document.querySelector('#flush-collapseTwo tbody');
         const newRowInputs = document.createElement('tr');
-        newRowInputs.innerHTML = `
+        newRowInputs.innerHTML = ` 
             <td>${attendance.toFixed(2)}</td>
             <td>${previousGrades}</td>
             <td>${financialSituation}</td>
@@ -88,7 +88,7 @@ document.getElementById('prediction-form').addEventListener('submit', function (
             <td>${result.student_id}</td>
             <td>${result.prediction.toFixed(2)}</td>
             <td>${result.remarks}</td> <!-- Add remarks -->
-        `;
+        `;  
         secondAccordionTable.appendChild(newRow);
 
         // Optionally, show the predicted grade in an alert or a dedicated section

@@ -1,10 +1,12 @@
-from flask import Blueprint, render_template, request, send_from_directory, jsonify, redirect, url_for
+from flask import Blueprint, render_template, request, send_from_directory, jsonify, redirect, url_for, current_app, Response
 import pandas as pd
 import joblib
 import numpy as np
 import csv
 import os
-from .db_model import Data, User
+import csv
+import io
+from .db_model import Data
 from . import db
 from flask_login import current_user
 
@@ -126,13 +128,6 @@ def predict():
         'remarks': remarks  # Return remarks to the frontend
     })
 
-
-def parse_csv(filepath):
-   with open(filepath, mode='r', encoding='utf-8-sig') as csv_prevdata:
-      reader = csv.reader(csv_prevdata)
-      csv_prevdata = [row for row in reader]
-      return csv_prevdata
-   
 @views.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
@@ -199,3 +194,30 @@ def upload_file():
         return redirect(url_for('views.home'))
 
     return redirect(url_for('views.home'))
+
+import csv
+import io
+from flask import Response
+
+@views.route('/download-template', methods=['GET'])
+def download_template():
+    # Create a string buffer to hold the CSV data
+    output = io.StringIO()
+    
+    # Create a CSV writer object
+    writer = csv.writer(output)
+    
+    # Write the header for the template
+    writer.writerow(['attendance', 'financial_situation', 'learning_environment', 'grade_level', 'previous_grades'])
+    
+    # Seek to the beginning of the StringIO object
+    output.seek(0)
+    
+    # Create a response object with the CSV data
+    response = Response(output, mimetype='text/csv')
+    
+    # Set the headers to indicate this is a file download
+    response.headers['Content-Disposition'] = 'attachment; filename=template.csv'
+    
+    return response
+
