@@ -37,19 +37,20 @@ def home():
     # Prepare data for the first accordion (Inputs and Predicted Grades)
     csv_data = [
         {
-            'attendance': row.attendance,
+            'attendance': round(row.attendance, 2),
             'previous_grades': row.previousGrade,
             'financial_situation': row.financialSituation,
             'learning_environment': row.learningEnvironment,
             'grade_level': row.gradeLevel,
-            'predicted_grade': row.predictedGrade
+            'predicted_grade': round(row.predictedGrade, 2),
+            'remarks': row.remarks
         }
         for row in input_prediction_data
     ]
 
     # Prepare data for the second accordion (Student No. and Predicted Grade)
     stored_predictions = [
-        {'student_id': row.user_prediction_id, 'predicted_grade': row.predictedGrade}
+        {'student_id': row.user_prediction_id, 'predicted_grade': round(row.predictedGrade, 2), 'remarks': row.remarks}
         for row in input_prediction_data
     ]
 
@@ -123,6 +124,7 @@ def predict():
     
     # Predict the grade
     prediction = model.predict(features)[0]
+    prediction = round(prediction, 2)
 
     # Classify the predicted grade
     remarks = classify_grade(prediction)
@@ -148,7 +150,7 @@ def predict():
 
     # Return the prediction, user-specific ID, and remarks as a JSON response
     return jsonify({
-        'prediction': prediction,
+        'prediction': round(prediction, 2),
         'student_id': new_data.user_prediction_id,
         'remarks': remarks  # Return remarks to the frontend
     })
