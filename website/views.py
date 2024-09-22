@@ -89,6 +89,31 @@ def predict():
         financial_situation = float(data['financial_situation'])
         learning_environment = float(data['learning_environment'])
         grade_level = int(data['grade_level'])
+
+
+
+        print("Received data:", data)
+
+        # Parse the incoming JSON data
+        days_present = float(data['days_present'])
+        school_days = float(data['school_days'])
+
+        # Validate: Days Present should not be negative
+        if days_present < 0:
+            return jsonify({'error': 'Days present cannot be negative.'}), 400
+
+        # Validate: School days must be greater than or equal to days present
+        if days_present > school_days:
+            return jsonify({'error': 'Days present cannot exceed total school days.'}), 400
+
+        # Calculate attendance percentage
+        attendance = (days_present / school_days) * 100
+
+        previous_grades = float(data['previous_grades'])
+        financial_situation = float(data['financial_situation'])
+        learning_environment = float(data['learning_environment'])
+        grade_level = int(data['grade_level'])
+        
     except (KeyError, ValueError) as e:
         return jsonify({'error': f'Invalid input: {str(e)}'}), 400
 

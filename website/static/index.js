@@ -31,22 +31,42 @@ updateSliderValue('learningEnvironment', 'learningEnvironmentValue');
 document.getElementById('prediction-form').addEventListener('submit', function (e) {
     e.preventDefault();  // Prevent the default form submission
 
-    const daysPresent = document.querySelector('input[name="days_present"]').value;
-    const schoolDays = document.querySelector('input[name="school_days"]').value;
-    const previousGrades = document.querySelector('input[name="previous_grades"]').value;
-    const financialSituation = document.querySelector('input[name="financial_situation"]').value;
-    const learningEnvironment = document.querySelector('input[name="learning_environment"]').value;
-    const gradeLevel = document.querySelector('select[name="grade_level"]').value;
+    const daysPresent = parseFloat(document.querySelector('input[name="days_present"]').value);
+    const schoolDays = parseFloat(document.querySelector('input[name="school_days"]').value);
+    const previousGrades = parseFloat(document.querySelector('input[name="previous_grades"]').value);
+    const financialSituation = parseFloat(document.querySelector('input[name="financial_situation"]').value);
+    const learningEnvironment = parseFloat(document.querySelector('input[name="learning_environment"]').value);
+    const gradeLevel = parseInt(document.querySelector('select[name="grade_level"]').value);
 
+    // Frontend validation
     if (!daysPresent || !schoolDays || !previousGrades) {
         alert('Please fill in all fields.');
         return;
     }
 
-    const attendance = (daysPresent / schoolDays) * 100;
+    // New validation for grade level
+    if (!gradeLevel || gradeLevel === 'Select Grade Level') {
+        alert('Please select a grade level.');
+        return;
+    }
 
+    // Days present should not be negative
+    if (daysPresent < 0) {
+        alert('Days present cannot be negative.');
+        return;
+    }
+
+    // Days present should not exceed school days
+    if (daysPresent > schoolDays) {
+        alert('Days present cannot exceed school days.');
+        return;
+    }
+
+    // Construct the data payload
     const data = {
-        attendance: attendance,
+        days_present: daysPresent,
+        school_days: schoolDays,
+        attendance: (daysPresent / schoolDays) * 100,
         previous_grades: previousGrades,
         financial_situation: financialSituation,
         learning_environment: learningEnvironment,
@@ -67,17 +87,20 @@ document.getElementById('prediction-form').addEventListener('submit', function (
             throw new Error(result.error);
         }
 
+        // Handle the result
+        console.log(result);
+
         // Update the first accordion with the new data (Inputs and Predicted Grades)
         const firstAccordionTable = document.querySelector('#flush-collapseTwo tbody');
         const newRowInputs = document.createElement('tr');
         newRowInputs.innerHTML = ` 
-            <td>${attendance.toFixed(2)}</td>
+            <td>${data.attendance.toFixed(2)}</td>
             <td>${previousGrades}</td>
             <td>${financialSituation}</td>
             <td>${learningEnvironment}</td>
             <td>${gradeLevel}</td>
             <td>${result.prediction.toFixed(2)}</td>
-            <td>${result.remarks}</td> <!-- Add remarks -->
+            <td>${result.remarks}</td>
         `;
         firstAccordionTable.appendChild(newRowInputs);
 
@@ -87,8 +110,8 @@ document.getElementById('prediction-form').addEventListener('submit', function (
         newRow.innerHTML = `
             <td>${result.student_id}</td>
             <td>${result.prediction.toFixed(2)}</td>
-            <td>${result.remarks}</td> <!-- Add remarks -->
-        `;  
+            <td>${result.remarks}</td>
+        `;
         secondAccordionTable.appendChild(newRow);
 
         // Optionally, show the predicted grade in an alert or a dedicated section
@@ -99,6 +122,7 @@ document.getElementById('prediction-form').addEventListener('submit', function (
         alert('Prediction failed: ' + error.message);
     });
 });
+
 
 
 
