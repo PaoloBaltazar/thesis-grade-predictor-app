@@ -123,6 +123,96 @@ document.getElementById('prediction-form').addEventListener('submit', function (
     });
 });
 
+document.addEventListener('DOMContentLoaded', function () {
+    const rowsPerPage = 5;
+
+    // First accordion (Inputs and Predicted Grades)
+    const tableBody1 = document.getElementById('csv-data-body');
+    const rows1 = tableBody1.getElementsByTagName('tr');
+    const pagination1 = document.getElementById('pagination');
+    
+    // Second accordion (Student No. and GPA Predicted)
+    const tableBody2 = document.getElementById('stored-predictions-body');
+    const rows2 = tableBody2.getElementsByTagName('tr');
+    const pagination2 = document.getElementById('pagination-stored');
+
+    // Pagination logic for both tables
+    function setupPagination(rows, pagination, displayPageFunc) {
+        const totalPages = Math.ceil(rows.length / rowsPerPage);
+
+        // Create pagination buttons
+        for (let i = 1; i <= totalPages; i++) {
+            const li = document.createElement('li');
+            li.classList.add('page-item');
+            if (i === 1) {
+                li.classList.add('active');  // First page is active by default
+            }
+            
+            const a = document.createElement('a');
+            a.classList.add('page-link');
+            a.href = '#';
+            a.textContent = i;
+
+            // Event listener for clicking on a pagination link
+            a.addEventListener('click', function (e) {
+                e.preventDefault();
+                displayPageFunc(i);
+            });
+
+            li.appendChild(a);
+            pagination.appendChild(li);
+        }
+
+        // Initially display the first page
+        displayPageFunc(1);
+    }
+
+    // Function to display the correct rows for a specific page in the first table
+    function displayPage1(page) {
+        for (let i = 0; i < rows1.length; i++) {
+            rows1[i].style.display = 'none';
+        }
+
+        const start = (page - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        for (let i = start; i < end && i < rows1.length; i++) {
+            rows1[i].style.display = '';
+        }
+
+        // Update active page for pagination
+        const paginationButtons = pagination1.getElementsByTagName('li');
+        for (let i = 0; i < paginationButtons.length; i++) {
+            paginationButtons[i].classList.remove('active');
+        }
+        paginationButtons[page - 1].classList.add('active');
+    }
+
+    // Function to display the correct rows for a specific page in the second table
+    function displayPage2(page) {
+        for (let i = 0; i < rows2.length; i++) {
+            rows2[i].style.display = 'none';
+        }
+
+        const start = (page - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        for (let i = start; i < end && i < rows2.length; i++) {
+            rows2[i].style.display = '';
+        }
+
+        // Update active page for pagination
+        const paginationButtons = pagination2.getElementsByTagName('li');
+        for (let i = 0; i < paginationButtons.length; i++) {
+            paginationButtons[i].classList.remove('active');
+        }
+        paginationButtons[page - 1].classList.add('active');
+    }
+
+    // Initialize pagination for both tables
+    setupPagination(rows1, pagination1, displayPage1);
+    setupPagination(rows2, pagination2, displayPage2);
+});
+
+
 
 
 
