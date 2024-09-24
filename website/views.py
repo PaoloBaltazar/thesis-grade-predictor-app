@@ -37,11 +37,10 @@ def home():
     # Prepare data for the first accordion (Inputs and Predicted Grades)
     csv_data = [
         {
-            'attendance': round(row.attendance, 2),
+            'attendance': round(row.attendance),
             'previous_grades': row.previousGrade,
             'financial_situation': row.financialSituation,
             'learning_environment': row.learningEnvironment,
-            'grade_level': row.gradeLevel,
             'predicted_grade': round(row.predictedGrade, 2),
             'remarks': row.remarks
         }
@@ -89,7 +88,6 @@ def predict():
         previous_grades = float(data['previous_grades'])
         financial_situation = float(data['financial_situation'])
         learning_environment = float(data['learning_environment'])
-        grade_level = int(data['grade_level'])
 
 
 
@@ -113,13 +111,12 @@ def predict():
         previous_grades = float(data['previous_grades'])
         financial_situation = float(data['financial_situation'])
         learning_environment = float(data['learning_environment'])
-        grade_level = int(data['grade_level'])
         
     except (KeyError, ValueError) as e:
         return jsonify({'error': f'Invalid input: {str(e)}'}), 400
 
     # Prepare features for prediction
-    features = np.array([attendance, financial_situation, learning_environment, previous_grades, grade_level]).reshape(1, -1)
+    features = np.array([attendance, financial_situation, learning_environment, previous_grades]).reshape(1, -1)
     features = scaler.transform(features)
     
     # Predict the grade
@@ -138,7 +135,6 @@ def predict():
         previousGrade=previous_grades,
         financialSituation=financial_situation,
         learningEnvironment=learning_environment,
-        gradeLevel=grade_level,
         predictedGrade=prediction,
         remarks=remarks,  # Store remarks
         user_id=current_user.id,
@@ -181,14 +177,14 @@ def upload_file():
         df = pd.read_csv(filepath)
 
         # Check if the required columns exist
-        required_columns = ['attendance', 'financial_situation', 'learning_environment', 'grade_level', 'previous_grades']
+        required_columns = ['attendance', 'financial_situation', 'learning_environment', 'previous_grades']
         if not all(col in df.columns for col in required_columns):
             return "Missing required columns in the uploaded CSV file."
 
         # Predict grades and add entries to the database
         for index, row in df.iterrows():
             try:
-                features = np.array([row['attendance'], row['financial_situation'], row['learning_environment'], row['previous_grades'], row['grade_level']]).reshape(1, -1)
+                features = np.array([row['attendance'], row['financial_situation'], row['learning_environment'], row['previous_grades']]).reshape(1, -1)
                 features_scaled = scaler.transform(features)
                 prediction = model.predict(features_scaled)[0]
 
@@ -204,7 +200,6 @@ def upload_file():
                     previousGrade=row['previous_grades'],
                     financialSituation=row['financial_situation'],
                     learningEnvironment=row['learning_environment'],
-                    gradeLevel=row['grade_level'],
                     predictedGrade=prediction,
                     remarks=remarks,  # Store remarks
                     user_id=current_user.id,

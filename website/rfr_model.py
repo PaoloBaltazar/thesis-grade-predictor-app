@@ -5,7 +5,7 @@ from sklearn.preprocessing import StandardScaler
 import joblib
 
 # Load data
-df = pd.read_csv('FINAL_DATA.csv')
+df = pd.read_csv('2023_revised.csv')
 df = pd.get_dummies(df)
 
 # Separate features and target (grades)
@@ -21,14 +21,15 @@ X_train, X_temp, y_train, y_temp = train_test_split(X_scaled, y, test_size=0.2, 
 X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.5, random_state=19)  # 10% val, 10% test
 
 param_grid = {
-    'n_estimators': [100, 200, 500],
-    'max_depth': [None, 5, 10, 15],
-    'min_samples_split': [2, 5, 10],
-    'min_samples_leaf': [1, 2, 4, 5],
-    'max_features': ['sqrt', 'log2', 0.5],
+    'n_estimators': [10, 50],
+    'max_depth': [None, 5, 10],
+    'min_samples_split': [2, 4],
+    'min_samples_leaf': [1, 2],
     'bootstrap': [True],
-    'oob_score': [True]
+    'oob_score': [True]  # Use out-of-bag validation for small datasets
 }
+
+
 
 # Define the model
 rfr = RandomForestRegressor(random_state=13, bootstrap=True)
@@ -41,5 +42,6 @@ grid_search.fit(X_train, y_train)
 
 best_rfr = grid_search.best_estimator_
 
+# Save the model and scaler
 joblib.dump(best_rfr, 'random_forest_model.pkl')
 joblib.dump(scaler, 'scaler.pkl')

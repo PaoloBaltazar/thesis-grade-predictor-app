@@ -9,7 +9,6 @@ class Data(db.Model):
     previousGrade = db.Column(db.Float)
     financialSituation = db.Column(db.Float)
     learningEnvironment = db.Column(db.Float)
-    gradeLevel = db.Column(db.Integer)
     predictedGrade = db.Column(db.Float)
     remarks = db.Column(db.String(50))  # New field for grade classification remarks
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))

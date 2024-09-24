@@ -4,15 +4,15 @@ const sidebar = document.getElementById('sidebar');
 const mainContent = document.getElementById('main-content');
 
 toggleBtn.addEventListener('click', () => {
-sidebar.classList.add('collapsed');
-toggleBtn.style.display = 'none';
-toggleBtnCollapsed.style.display = 'block';
+    sidebar.classList.add('collapsed');
+    toggleBtn.style.display = 'none';
+    toggleBtnCollapsed.style.display = 'block';
 });
 
 toggleBtnCollapsed.addEventListener('click', () => {
-sidebar.classList.remove('collapsed');
-toggleBtnCollapsed.style.display = 'none';
-toggleBtn.style.display = 'block';
+    sidebar.classList.remove('collapsed');
+    toggleBtnCollapsed.style.display = 'none';
+    toggleBtn.style.display = 'block';
 });
 
 function updateSliderValue(sliderId, valueId) {
@@ -28,6 +28,76 @@ function updateSliderValue(sliderId, valueId) {
 updateSliderValue('financialSituation', 'financialSituationValue');
 updateSliderValue('learningEnvironment', 'learningEnvironmentValue');
 
+// Define pagination functions in the global scope
+const rowsPerPage = 5;
+
+function setupPagination(rows, pagination, displayPageFunc) {
+    const totalPages = Math.ceil(rows.length / rowsPerPage);
+    pagination.innerHTML = ''; // Clear existing pagination
+
+    for (let i = 1; i <= totalPages; i++) {
+        const li = document.createElement('li');
+        li.classList.add('page-item');
+        if (i === 1) li.classList.add('active');
+
+        const a = document.createElement('a');
+        a.classList.add('page-link');
+        a.href = '#';
+        a.textContent = i;
+
+        a.addEventListener('click', (e) => {
+            e.preventDefault();
+            displayPageFunc(i);
+        });
+
+        li.appendChild(a);
+        pagination.appendChild(li);
+    }
+
+    displayPageFunc(1); // Display the first page initially
+}
+
+function displayPage1(page) {
+    const tableBody1 = document.querySelector('#flush-collapseTwo tbody');
+    const rows1 = tableBody1.getElementsByTagName('tr');
+    for (let i = 0; i < rows1.length; i++) {
+        rows1[i].style.display = 'none';
+    }
+
+    const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    for (let i = start; i < end && i < rows1.length; i++) {
+        rows1[i].style.display = '';
+    }
+
+    const paginationButtons = document.getElementById('pagination').getElementsByTagName('li');
+    for (let i = 0; i < paginationButtons.length; i++) {
+        paginationButtons[i].classList.remove('active');
+    }
+    paginationButtons[page - 1].classList.add('active');
+}
+
+function displayPage2(page) {
+    const tableBody2 = document.querySelector('#panelsStayOpen-collapseTwo tbody');
+    const rows2 = tableBody2.getElementsByTagName('tr');
+    for (let i = 0; i < rows2.length; i++) {
+        rows2[i].style.display = 'none';
+    }
+
+    const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    for (let i = start; i < end && i < rows2.length; i++) {
+        rows2[i].style.display = '';
+    }
+
+    const paginationButtons = document.getElementById('pagination-stored').getElementsByTagName('li');
+    for (let i = 0; i < paginationButtons.length; i++) {
+        paginationButtons[i].classList.remove('active');
+    }
+    paginationButtons[page - 1].classList.add('active');
+}
+
+// Handle the prediction form submission
 document.getElementById('prediction-form').addEventListener('submit', function (e) {
     e.preventDefault();  // Prevent the default form submission
 
@@ -36,17 +106,10 @@ document.getElementById('prediction-form').addEventListener('submit', function (
     const previousGrades = parseFloat(document.querySelector('input[name="previous_grades"]').value);
     const financialSituation = parseFloat(document.querySelector('input[name="financial_situation"]').value);
     const learningEnvironment = parseFloat(document.querySelector('input[name="learning_environment"]').value);
-    const gradeLevel = parseInt(document.querySelector('select[name="grade_level"]').value);
 
     // Frontend validation
     if (!daysPresent || !schoolDays || !previousGrades) {
         alert('Please fill in all fields.');
-        return;
-    }
-
-    // New validation for grade level
-    if (!gradeLevel || gradeLevel === 'Select Grade Level') {
-        alert('Please select a grade level.');
         return;
     }
 
@@ -69,8 +132,7 @@ document.getElementById('prediction-form').addEventListener('submit', function (
         attendance: (daysPresent / schoolDays) * 100,
         previous_grades: previousGrades,
         financial_situation: financialSituation,
-        learning_environment: learningEnvironment,
-        grade_level: gradeLevel
+        learning_environment: learningEnvironment
     };
 
     // Send the data to the server
@@ -87,24 +149,19 @@ document.getElementById('prediction-form').addEventListener('submit', function (
             throw new Error(result.error);
         }
 
-        // Handle the result
-        console.log(result);
-
-        // Update the first accordion with the new data (Inputs and Predicted Grades)
+        // Update the tables with new data
         const firstAccordionTable = document.querySelector('#flush-collapseTwo tbody');
         const newRowInputs = document.createElement('tr');
-        newRowInputs.innerHTML = ` 
+        newRowInputs.innerHTML = `
             <td>${data.attendance.toFixed(2)}</td>
             <td>${previousGrades}</td>
             <td>${financialSituation}</td>
             <td>${learningEnvironment}</td>
-            <td>${gradeLevel}</td>
             <td>${result.prediction.toFixed(2)}</td>
             <td>${result.remarks}</td>
         `;
         firstAccordionTable.appendChild(newRowInputs);
 
-        // Update the second accordion with the new data (Student No. and Grade Predicted)
         const secondAccordionTable = document.querySelector('#panelsStayOpen-collapseTwo tbody');
         const newRow = document.createElement('tr');
         newRow.innerHTML = `
@@ -114,7 +171,15 @@ document.getElementById('prediction-form').addEventListener('submit', function (
         `;
         secondAccordionTable.appendChild(newRow);
 
-        // Optionally, show the predicted grade in an alert or a dedicated section
+        // Call the pagination setup for both tables
+        const rows1 = firstAccordionTable.getElementsByTagName('tr');
+        const rows2 = secondAccordionTable.getElementsByTagName('tr');
+        const pagination1 = document.getElementById('pagination');
+        const pagination2 = document.getElementById('pagination-stored');
+
+        setupPagination(rows1, pagination1, displayPage1);
+        setupPagination(rows2, pagination2, displayPage2);
+
         document.getElementById('prediction-result').textContent = 'Predicted Grade: ' + result.prediction.toFixed(2);
     })
     .catch(error => {
@@ -123,96 +188,17 @@ document.getElementById('prediction-form').addEventListener('submit', function (
     });
 });
 
+// Initialize pagination after the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', function () {
-    const rowsPerPage = 5;
-
-    // First accordion (Inputs and Predicted Grades)
     const tableBody1 = document.getElementById('csv-data-body');
     const rows1 = tableBody1.getElementsByTagName('tr');
     const pagination1 = document.getElementById('pagination');
     
-    // Second accordion (Student No. and GPA Predicted)
     const tableBody2 = document.getElementById('stored-predictions-body');
     const rows2 = tableBody2.getElementsByTagName('tr');
     const pagination2 = document.getElementById('pagination-stored');
-
-    // Pagination logic for both tables
-    function setupPagination(rows, pagination, displayPageFunc) {
-        const totalPages = Math.ceil(rows.length / rowsPerPage);
-
-        // Create pagination buttons
-        for (let i = 1; i <= totalPages; i++) {
-            const li = document.createElement('li');
-            li.classList.add('page-item');
-            if (i === 1) {
-                li.classList.add('active');  // First page is active by default
-            }
-            
-            const a = document.createElement('a');
-            a.classList.add('page-link');
-            a.href = '#';
-            a.textContent = i;
-
-            // Event listener for clicking on a pagination link
-            a.addEventListener('click', function (e) {
-                e.preventDefault();
-                displayPageFunc(i);
-            });
-
-            li.appendChild(a);
-            pagination.appendChild(li);
-        }
-
-        // Initially display the first page
-        displayPageFunc(1);
-    }
-
-    // Function to display the correct rows for a specific page in the first table
-    function displayPage1(page) {
-        for (let i = 0; i < rows1.length; i++) {
-            rows1[i].style.display = 'none';
-        }
-
-        const start = (page - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
-        for (let i = start; i < end && i < rows1.length; i++) {
-            rows1[i].style.display = '';
-        }
-
-        // Update active page for pagination
-        const paginationButtons = pagination1.getElementsByTagName('li');
-        for (let i = 0; i < paginationButtons.length; i++) {
-            paginationButtons[i].classList.remove('active');
-        }
-        paginationButtons[page - 1].classList.add('active');
-    }
-
-    // Function to display the correct rows for a specific page in the second table
-    function displayPage2(page) {
-        for (let i = 0; i < rows2.length; i++) {
-            rows2[i].style.display = 'none';
-        }
-
-        const start = (page - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
-        for (let i = start; i < end && i < rows2.length; i++) {
-            rows2[i].style.display = '';
-        }
-
-        // Update active page for pagination
-        const paginationButtons = pagination2.getElementsByTagName('li');
-        for (let i = 0; i < paginationButtons.length; i++) {
-            paginationButtons[i].classList.remove('active');
-        }
-        paginationButtons[page - 1].classList.add('active');
-    }
 
     // Initialize pagination for both tables
     setupPagination(rows1, pagination1, displayPage1);
     setupPagination(rows2, pagination2, displayPage2);
 });
-
-
-
-
-
