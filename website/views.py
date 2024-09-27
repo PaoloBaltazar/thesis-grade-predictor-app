@@ -230,7 +230,7 @@ def download_template():
     writer = csv.writer(output)
     
     # Write the header for the template
-    writer.writerow(['attendance', 'financial_situation', 'learning_environment', 'grade_level', 'previous_grades'])
+    writer.writerow(['attendance', 'previous_grades', 'financial_situation', 'learning_environment'])
     
     # Seek to the beginning of the StringIO object
     output.seek(0)
