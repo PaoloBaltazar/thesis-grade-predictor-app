@@ -151,14 +151,16 @@ def predict():
         'remarks': remarks  # Return remarks to the frontend
     })
 
+import re  # For pattern matching
+
 @views.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
-        return redirect(url_for('views.home'))
+        return '<script>alert("No file part in the request."); window.location.href="/";</script>'
 
     file = request.files['file']
     if file.filename == '':
-        return redirect(url_for('views.home'))
+        return '<script>alert("No selected file."); window.location.href="/";</script>'
 
     if file and file.filename.endswith('.csv'):
         # Ensure the upload directory exists
@@ -171,7 +173,7 @@ def upload_file():
             # Save the uploaded file
             file.save(filepath)
         except PermissionError as e:
-            return f"Permission error: {e}"
+            return f'<script>alert("Permission error: {e}"); window.location.href="/";</script>'
 
         # Process the CSV file
         df = pd.read_csv(filepath)
@@ -179,9 +181,27 @@ def upload_file():
         # Check if the required columns exist
         required_columns = ['attendance', 'financial_situation', 'learning_environment', 'previous_grades']
         if not all(col in df.columns for col in required_columns):
-            return "Missing required columns in the uploaded CSV file."
+            return '<script>alert("Missing required columns in the uploaded CSV file."); window.location.href="/";</script>'
 
-        # Predict grades and add entries to the database
+        # Regular expression pattern for valid numbers: whole numbers 1-5 and .25, .50, .75
+        valid_pattern = re.compile(r"^[1-5](\.00)?|0\.(25|50|75)$")
+
+        # Validate that financial_situation and learning_environment follow the valid pattern
+        for index, row in df.iterrows():
+            financial_value = str(row['financial_situation'])
+            learning_value = str(row['learning_environment'])
+
+            if not valid_pattern.match(financial_value) or not valid_pattern.match(learning_value):
+                return f'<script>alert("Invalid data in row {index+1}: Financial situation and learning environment must be between 1 to 5 or 0.25, 0.50, 0.75."); window.location.href="/";</script>'
+
+            # Ensure attendance and previous_grades are numeric (no letters)
+            try:
+                attendance = float(row['attendance'])
+                previous_grade = float(row['previous_grades'])
+            except ValueError:
+                return f'<script>alert("Invalid data in row {index+1}: Attendance and previous grades must be numeric values."); window.location.href="/";</script>'
+
+        # Predict grades and add entries to the database if the validation passes
         for index, row in df.iterrows():
             try:
                 features = np.array([row['attendance'], row['financial_situation'], row['learning_environment'], row['previous_grades']]).reshape(1, -1)
@@ -212,10 +232,9 @@ def upload_file():
                 continue
 
         db.session.commit()  # Commit all new entries to the database
+        return '<script>alert("File uploaded and processed successfully."); window.location.href="/";</script>'
 
-        return redirect(url_for('views.home'))
-
-    return redirect(url_for('views.home'))
+    return '<script>alert("Invalid file format. Please upload a CSV file."); window.location.href="/";</script>'
 
 import csv
 import io
