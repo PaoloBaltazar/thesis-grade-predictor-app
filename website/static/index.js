@@ -108,7 +108,7 @@ document.getElementById('prediction-form').addEventListener('submit', function (
     const learningEnvironment = parseFloat(document.querySelector('input[name="learning_environment"]').value);
 
     // Frontend validation
-    if (!daysPresent || !schoolDays || !previousGrades) {
+    if (isNaN(daysPresent) || isNaN(schoolDays) || isNaN(previousGrades)) {
         alert('Please fill in all fields.');
         return;
     }

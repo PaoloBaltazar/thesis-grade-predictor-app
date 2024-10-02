@@ -25,10 +25,9 @@ param_grid = {
     'max_depth': [None, 5, 10],
     'min_samples_split': [2, 4],
     'min_samples_leaf': [1, 2],
+    'max_features': ['sqrt', 'log2'], 
     'bootstrap': [True],
-    'oob_score': [True]  # Use out-of-bag validation for small datasets
 }
-
 
 
 # Define the model
