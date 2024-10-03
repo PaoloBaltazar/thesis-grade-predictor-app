@@ -211,7 +211,7 @@ def upload_file():
                 # Classify the predicted grade
                 remarks = classify_grade(prediction)
 
-                # Get the next user-specific prediction ID
+                # Get the next user-specific prediction IDD
                 user_prediction_id = get_next_user_prediction_id(current_user.id)
 
                 # Save data and prediction to the database
