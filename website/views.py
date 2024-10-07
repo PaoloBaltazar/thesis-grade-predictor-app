@@ -37,6 +37,7 @@ def home():
     # Prepare data for the first accordion (Inputs and Predicted Grades)
     csv_data = [
         {
+            'studentid': row.user_prediction_id,
             'attendance': round(row.attendance),
             'previous_grades': row.previousGrade,
             'financial_situation': row.financialSituation,
@@ -49,7 +50,10 @@ def home():
 
     # Prepare data for the second accordion (Student No. and Predicted Grade)
     stored_predictions = [
-        {'student_id': row.user_prediction_id, 'predicted_grade': round(row.predictedGrade, 2), 'remarks': row.remarks}
+        {
+            'student_id': row.user_prediction_id, 
+            'predicted_grade': round(row.predictedGrade, 2), 
+            'remarks': row.remarks}
         for row in input_prediction_data
     ]
 
@@ -178,48 +182,53 @@ def upload_file():
         # Process the CSV file
         df = pd.read_csv(filepath)
 
-        # Check if the required columns exist
-        required_columns = ['attendance', 'financial_situation', 'learning_environment', 'previous_grades']
+        # Check if the required columns exist (notice no 'attendance' in required columns anymore)
+        required_columns = ['days_present', 'school_days', 'financial_situation', 'learning_environment', 'previous_grades']
         if not all(col in df.columns for col in required_columns):
             return '<script>alert("Missing required columns in the uploaded CSV file."); window.location.href="/";</script>'
 
-        # Regular expression pattern for valid numbers: whole numbers 1-5 and .25, .50, .75
-        valid_pattern = re.compile(r"^[1-5](\.00)?|0\.(25|50|75)$")
-
-        # Validate that financial_situation and learning_environment follow the valid pattern
+        # Validate and calculate attendance dynamically
         for index, row in df.iterrows():
-            financial_value = str(row['financial_situation'])
-            learning_value = str(row['learning_environment'])
-
-            if not valid_pattern.match(financial_value) or not valid_pattern.match(learning_value):
-                return f'<script>alert("Invalid data in row {index+1}: Financial situation and learning environment must be between 1 to 5 or 0.25, 0.50, 0.75."); window.location.href="/";</script>'
-
-            # Ensure attendance and previous_grades are numeric (no letters)
             try:
-                attendance = float(row['attendance'])
+                # Days Present and School Days should be numeric values
+                days_present = float(row['days_present'])
+                school_days = float(row['school_days'])
+
+                # Validate the days present and school days
+                if days_present < 0:
+                    return f'<script>alert("Invalid data in row {index+1}: Days present cannot be negative."); window.location.href="/";</script>'
+                if days_present > school_days:
+                    return f'<script>alert("Invalid data in row {index+1}: Days present cannot exceed total school days."); window.location.href="/";</script>'
+
+                # Calculate attendance percentage
+                attendance = (days_present / school_days) * 100  # Calculate and use attendance dynamically
+
+                # Ensure other columns are numeric
+                financial_situation = float(row['financial_situation'])
+                learning_environment = float(row['learning_environment'])
                 previous_grade = float(row['previous_grades'])
+                
             except ValueError:
-                return f'<script>alert("Invalid data in row {index+1}: Attendance and previous grades must be numeric values."); window.location.href="/";</script>'
+                return f'<script>alert("Invalid data in row {index+1}: Numeric values are expected for days_present, school_days, financial_situation, learning_environment, and previous grades."); window.location.href="/";</script>'
 
-        # Predict grades and add entries to the database if the validation passes
-        for index, row in df.iterrows():
             try:
-                features = np.array([row['attendance'], row['financial_situation'], row['learning_environment'], row['previous_grades']]).reshape(1, -1)
+                # Prepare features for prediction
+                features = np.array([attendance, financial_situation, learning_environment, previous_grade]).reshape(1, -1)
                 features_scaled = scaler.transform(features)
                 prediction = model.predict(features_scaled)[0]
 
                 # Classify the predicted grade
                 remarks = classify_grade(prediction)
 
-                # Get the next user-specific prediction IDD
+                # Get the next user-specific prediction ID
                 user_prediction_id = get_next_user_prediction_id(current_user.id)
 
                 # Save data and prediction to the database
                 new_data = Data(
-                    attendance=row['attendance'],
-                    previousGrade=row['previous_grades'],
-                    financialSituation=row['financial_situation'],
-                    learningEnvironment=row['learning_environment'],
+                    attendance=attendance,  # Use the calculated attendance
+                    previousGrade=previous_grade,
+                    financialSituation=financial_situation,
+                    learningEnvironment=learning_environment,
                     predictedGrade=prediction,
                     remarks=remarks,  # Store remarks
                     user_id=current_user.id,
@@ -236,6 +245,7 @@ def upload_file():
 
     return '<script>alert("Invalid file format. Please upload a CSV file."); window.location.href="/";</script>'
 
+
 import csv
 import io
 from flask import Response
@@ -249,7 +259,7 @@ def download_template():
     writer = csv.writer(output)
     
     # Write the header for the template
-    writer.writerow(['attendance', 'previous_grades', 'financial_situation', 'learning_environment'])
+    writer.writerow(['days_present', 'school_days', 'previous_grades', 'financial_situation', 'learning_environment'])
     
     # Seek to the beginning of the StringIO object
     output.seek(0)
@@ -261,4 +271,5 @@ def download_template():
     response.headers['Content-Disposition'] = 'attachment; filename=template.csv'
     
     return response
+
 

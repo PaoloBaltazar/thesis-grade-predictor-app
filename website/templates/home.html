@@ -94,6 +94,7 @@
             <table class="table">
               <thead>
                 <tr>
+                  <th>ID</th>
                   <th>Attendance</th>
                   <th>Previous Grades</th>
                   <th>Financial Situation</th>
@@ -105,6 +106,7 @@
               <tbody id="csv-data-body">
                 {% for row in csv_data %}
                   <tr>
+                    <td>{{ row['studentid'] }}</td>
                     <td>{{ row['attendance'] }}</td>
                     <td>{{ row['previous_grades'] }}</td>
                     <td>{{ row['financial_situation'] }}</td>

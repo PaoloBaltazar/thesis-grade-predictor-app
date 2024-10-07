@@ -153,6 +153,7 @@ document.getElementById('prediction-form').addEventListener('submit', function (
         const firstAccordionTable = document.querySelector('#flush-collapseTwo tbody');
         const newRowInputs = document.createElement('tr');
         newRowInputs.innerHTML = `
+            <td>${result.student_id}</td>
             <td>${data.attendance.toFixed(2)}</td>
             <td>${previousGrades}</td>
             <td>${financialSituation}</td>
